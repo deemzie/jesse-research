@@ -29,7 +29,8 @@ Tips:
 
 Known issues:
 1. "Javascript: require is not defined" may pop, just rerun the notebook.
-2. Candlestick markers on orders may have an offset when using different timeframes than the backtest. 
+2. Candlestick markers on orders may have an offset when using different timeframes than the backtest.
+3. Jesse natively stores incomplete incomplete information on orders such as fees. Expect deviations between backtest results and live.
 
 ![equity](https://github.com/user-attachments/assets/c8c5f4d3-2777-424f-a34a-987262a60a29)
 ![chart](https://github.com/user-attachments/assets/c502bca6-3ead-4a2f-8118-15ebd24e3103)
