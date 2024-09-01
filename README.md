@@ -24,8 +24,9 @@ Installation process:
 9. Run the notebook.
 
 Tips:
-1. Read the notebook to understand how to plot your own stuff nicely.
-2. Read the Lightweight chart documentation to see how to apply styles to your charts: https://tradingview.github.io/lightweight-charts/
+1. Read the notebook and strategy example to understand how to plot your own stuff nicely.
+2. Include the methods used in the strategy file in a separate python file or in a new class inherited from Jesse Strategy.
+3. Read the Lightweight chart documentation to see how to apply styles to your charts: https://tradingview.github.io/lightweight-charts/
 
 Known issues:
 1. "Javascript: require is not defined" may pop, just rerun the notebook.
