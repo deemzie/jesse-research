@@ -25,3 +25,6 @@ Installation process:
 Known issues:
 1. "Javascript: require is not defined" may pop, just rerun the notebook.
 2. Candlestick markers on orders may have an offset when using different timeframes than the backtest. 
+
+![equity](https://github.com/user-attachments/assets/c8c5f4d3-2777-424f-a34a-987262a60a29)
+![chart](https://github.com/user-attachments/assets/c502bca6-3ead-4a2f-8118-15ebd24e3103)
