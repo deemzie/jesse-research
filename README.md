@@ -15,12 +15,17 @@ Main Features:
 Installation process:
 1. Copy this repo into the root of your Jesse directory in your server.
 2. Run Jesse and Jypyter Lab.
-3. Import candles
+3. Import candles in Jesse.
 4. Edit your strategy file like the example to select the indicators you want to save in the before method and dump the json files in the terminate method.
-5. Run your backtest
-6. Go to jupyter, open the notebook and select your backtest by editing the name file ; select the timeframe you want to look at ; warmup candles and initial balance.
-7. Select and customize your indicators to plot on the chart in the last notebook cell.
-8. Run the notebook.
+5. Run your backtest.
+6. Go to jupyter, open the notebook, uncomment and run the first cell to install dependencies you may not have.
+7. Select your backtest by editing the name file ; select the timeframe you want to look at ; warmup candles and initial balance.
+8. Select and customize your indicators to plot on the chart in the last notebook cell.
+9. Run the notebook.
+
+Tips:
+1. Read the notebook to understand how to plot your own stuff nicely.
+2. Read the Lightweight chart documentation to see how to apply styles to your charts: https://tradingview.github.io/lightweight-charts/
 
 Known issues:
 1. "Javascript: require is not defined" may pop, just rerun the notebook.
