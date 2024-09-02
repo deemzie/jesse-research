@@ -14,7 +14,7 @@ Main Features:
 
 Installation process:
 1. Copy this repo into the root of your Jesse directory in your server.
-2. Run Jesse and Jypyter Lab.
+2. Run Jesse and Jupyter Lab.
 3. Import candles in Jesse.
 4. Edit your strategy file like the example to select the indicators you want to save in the before method and dump the json files in the terminate method.
 5. Run your backtest.
