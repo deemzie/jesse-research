@@ -3,12 +3,14 @@ import numpy as np
 import json
 from IPython.display import Javascript, display
 
-def plot(candles, buys=pd.Series(), sells=pd.Series(), data=dict, config=[], dark_theme=False, width=980, height=700, chart_name='chart'):
+def plot(candles, buys=pd.Series(), sells=pd.Series(), data=dict, config=[], chart_lines=[], extra_lines=[], dark_theme=False, width=980, height=700, chart_name='chart'):
     js = init(chart_name)
     js += inject_candles(candles, chart_name)
     js += inject(buys, chart_name, 'buys')
     js += inject(sells, chart_name, 'sells')
     js += inject(data, chart_name)
+    js += inject(chart_lines, chart_name, 'chart_lines')
+    js += inject(extra_lines, chart_name, 'extra_lines')
     js += inject(config, chart_name, name='config')
     js += render(width, height, dark_theme, chart_name)
     display(Javascript(js))
@@ -164,29 +166,32 @@ def render_series(width=950, height=700, dark_theme=False, chart_name='chart'):
         const theme = '{"Dark" if dark_theme == True else "Light"}';
         chart.applyOptions(themesData[theme].chart);
 
+        var chart_serie = {{}};
+
         {chart_name}_data.config.forEach(it => {{
             const params = {{'title': it['name'], ...it['style']}};
             const data = {chart_name}_data[it['name']];
-            if (it['attach']) {{
+            if (it['chart'] === undefined) {{
                 chart[it['fn']](params).setData(data);
                 chart.timeScale().fitContent();
             }} else {{
-                var chart_serie = LightweightCharts.createChart(id, {{width: {width}, height: it['height']}});
-                const theme = '{"Dark" if dark_theme == True else "Light"}';
-                chart_serie.applyOptions(themesData[theme].chart);
-                all_charts.push(chart_serie)
+                if (chart_serie[it['chart']] === undefined) {{
+                    chart_serie[it['chart']] = LightweightCharts.createChart(id, {{width: {width}, height: it['height']}});
+                    chart_serie[it['chart']].applyOptions(themesData[theme].chart);
+                    all_charts.push(chart_serie[it['chart']]);
+                }}
                 
-                const serie = chart_serie[it['fn']](params);
+                const serie = chart_serie[it['chart']][it['fn']](params);
                 serie.setData(data);
-                all_series.push(serie)
+                all_series.push(serie);
 
-                chart_serie.priceScale('right').applyOptions({{  minimumWidth: 100, }});
-
+                chart_serie[it['chart']].priceScale('right').applyOptions({{  minimumWidth: 100, }});
                 const visibleRange = chart.timeScale().getVisibleRange();
-                chart_serie.timeScale().setVisibleRange(chart.timeScale().getVisibleRange());
+                chart_serie[it['chart']].timeScale().setVisibleRange(chart.timeScale().getVisibleRange());
 
             }}
         }})
+
     }})
     """
 
@@ -258,25 +263,47 @@ def render(width=950, height=700, dark_theme=False, chart_name='chart'):
         var all_series = [candleSeries];
         chart.priceScale('right').applyOptions({{  minimumWidth: 100, }});
 
+        var chart_serie = {{}};
+
+        // Add lines
+        var lines = [];
+        {chart_name}_data.chart_lines.forEach(it => {{
+            const horizontalLine = candleSeries.createPriceLine(it);
+            horizontalLine.applyOptions(it);
+        }})
+
         {chart_name}_data.config.forEach(it => {{
             const params = {{'title': it['name'], ...it['style']}};
             const data = {chart_name}_data[it['name']];
-            if (it['attach']) {{
+            if (it['chart'] === undefined) {{
                 chart[it['fn']](params).setData(data);
+                chart.timeScale().fitContent();
             }} else {{
-                var chart_serie = LightweightCharts.createChart(id, {{width: {width}, height: it['height']}});
-                const theme = '{"Dark" if dark_theme == True else "Light"}';
-                chart_serie.applyOptions(themesData[theme].chart);
-                all_charts.push(chart_serie)
+                if (chart_serie[it['chart']] === undefined) {{
+                    chart_serie[it['chart']] = LightweightCharts.createChart(id, {{width: {width}, height: it['height']}});
+                    chart_serie[it['chart']].applyOptions(themesData[theme].chart);
+                    all_charts.push(chart_serie[it['chart']]);
+                }}
                 
-                const serie = chart_serie[it['fn']](params);
+                const serie = chart_serie[it['chart']][it['fn']](params);
                 serie.setData(data);
-                all_series.push(serie)
+                all_series.push(serie);
 
-                chart_serie.priceScale('right').applyOptions({{  minimumWidth: 100, }});
-
+                chart_serie[it['chart']].priceScale('right').applyOptions({{  minimumWidth: 100, }});
                 const visibleRange = chart.timeScale().getVisibleRange();
-                chart_serie.timeScale().setVisibleRange(chart.timeScale().getVisibleRange());
+                chart_serie[it['chart']].timeScale().setVisibleRange(chart.timeScale().getVisibleRange());
+                
+                {chart_name}_data.extra_lines.forEach(line => {{
+                    if (line[it['chart']] !== undefined) {{
+                        Object.entries(line[it['chart']]).forEach(([name, line]) => {{
+                            if (!lines.includes(name)) {{
+                                lines.push(name);
+                                const horizontalLine = serie.createPriceLine(line);
+                                horizontalLine.applyOptions(line);
+                            }}
+                        }})
+                    }}
+                }})
 
             }}
         }})
@@ -296,7 +323,6 @@ def render(width=950, height=700, dark_theme=False, chart_name='chart'):
                 it.timeScale().unsubscribeVisibleLogicalRangeChange(handle)
 
             }})
-            console.log(handle);
         }}
         subscribeRangeChange();
         
@@ -366,7 +392,6 @@ def render(width=950, height=700, dark_theme=False, chart_name='chart'):
         document.querySelectorAll('.clickable-row').forEach(row => {{
             row.addEventListener('click', () => {{ 
                 const dateString = row.querySelector("#date").textContent; 
-                console.log(dateString);
                 move_to_date(dateString); 
 
                 const date = new Date(dateString);
@@ -394,7 +419,6 @@ def render(width=950, height=700, dark_theme=False, chart_name='chart'):
         document.querySelectorAll('#order').forEach(row => {{
             row.addEventListener('click', () => {{ 
                 const dateString = row.querySelector("#date").textContent; 
-                console.log(dateString);
                 move_to_date(dateString);
                 
                 const date = new Date(dateString);

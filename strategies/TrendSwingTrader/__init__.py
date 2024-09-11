@@ -1,4 +1,4 @@
-from jesse.strategies import Strategy, cached
+from strategies.Strategies import Strategies
 import jesse.indicators as ta
 from jesse import utils
 
@@ -11,7 +11,7 @@ from jesse.config import config
 import os
 
 
-class TrendSwingTrader(Strategy):
+class TrendSwingTrader(Strategies):
     @property
     def adx(self):
         return ta.adx(self.candles)
@@ -67,23 +67,17 @@ class TrendSwingTrader(Strategy):
             {'name': 'ema3_period', 'type': int, 'min': 80, 'max': 120, 'default': 100},
         ]
 
-    def dna(self) -> str:
+    #def dna(self) -> str:
         # return 'GKiY8S'
-        return 'HLivH('
+        #return 'HLivH('
 
-    # Add to jesse flow
-    def __init__(self):
-        super().__init__()
-        self.saved_series = {}
-
-    def before(self):
-        self.save_series_value([self.adx], ['adx'])
+    def after(self):
+        self.add_extra_line_chart('adx', 'adx', self.adx)
 
     def terminate(self):
         self.store_json()
         self.dump_series()
 
-    # Toolbox to save data, should be imported from a custom Strategy object in another file
     def store_json(self):
         start_date = str(datetime.fromtimestamp(store.app.starting_time / 1000))[0:10]
         finish_date = str(datetime.fromtimestamp(store.app.time / 1000))[0:10]
@@ -106,11 +100,6 @@ class TrendSwingTrader(Strategy):
             json.dump(trades_json, outfile, default=set_default)
             
             
-    def save_series_value(self, values, names):
-        for (name, serie) in zip(names, values): 
-            if name not in self.saved_series: self.saved_series[name] = {}
-            self.saved_series[name][self.time] = serie
-            
     def dump_series(self):
         start_date = str(datetime.fromtimestamp(store.app.starting_time / 1000))[0:10]
         finish_date = str(datetime.fromtimestamp(store.app.time / 1000))[0:10]
@@ -127,9 +116,9 @@ class TrendSwingTrader(Strategy):
                     return list(obj)
                 raise TypeError
                 
-            json.dump(self.saved_series, outfile, default=set_default)
-
-    @staticmethod       
+            json.dump({'line': self._add_line_to_candle_chart_values, 'horizontal': self._add_horizontal_line_to_candle_chart_values, 'extra_line': self._add_extra_line_chart_values, 'extra_horizontal': self._add_horizontal_line_to_extra_chart_values}, outfile, default=set_default)
+            
+    @staticmethod
     def toJSON(trade):
         orders = [o.__dict__ for o in trade.orders]
         return {
@@ -152,3 +141,4 @@ class TrendSwingTrader(Strategy):
             "exit_candle_timestamp": trade.closed_at,
             "orders": orders,
         }
+    
